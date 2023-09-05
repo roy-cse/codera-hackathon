@@ -1,8 +1,8 @@
-
 # Author: Abhishek Roy
 # Description: This code is an AWS Lambda function for error handling and analysis, integrating with various services.
 # License: MIT License
 
+# Import necessary libraries
 import boto3
 import requests
 import gzip
@@ -12,11 +12,13 @@ from html.parser import HTMLParser
 import os
 import openai  # Import the OpenAI library
 
+# Get environment variables
 slack_webhook_url = os.environ.get("SLACK_WEBHOOK_URL")
 sns_topic_arn = os.environ.get("SNS_TOPIC_ARN")
 openai_api_key = os.environ.get("OPENAI_API_KEY")  # Set your OpenAI API key as an environment variable
 application_type = os.environ.get("APPLICATION_TYPE")
 
+# Define a custom HTML parser class
 class MyHTMLParser(HTMLParser):
     def __init__(self):
         super().__init__()
@@ -28,6 +30,7 @@ class MyHTMLParser(HTMLParser):
     def get_plain_text(self):
         return ''.join(self.result)
 
+# Function to send an email using Amazon SNS
 def send_email_sns(subject, message):
     sns_client = boto3.client("sns")
     sns_client.publish(
@@ -36,6 +39,7 @@ def send_email_sns(subject, message):
         Message=message
     )
 
+# Function to send a Slack message
 def send_slack_message(message):
 
     # Create a payload without a divider block
@@ -60,12 +64,14 @@ def send_slack_message(message):
     if response.status_code != 200:
         print(f"Failed to send Slack message: {response.text}")
 
+# Function to search Stack Overflow for error information
 def search_stackoverflow(error):
     url = "https://api.stackexchange.com/2.3/search?order=desc&sort=activity&tagged={}&intitle={}&site=stackoverflow"
     formatted_url = url.format(application_type, error)
     resp = requests.get(formatted_url)
     return resp.json()
 
+# Function to retrieve the accepted answer body from Stack Overflow
 def get_accepted_answer_body(answer_id):
     resp = requests.get(f"https://api.stackexchange.com/2.3/answers/{answer_id}?order=desc&sort=activity&site=stackoverflow&filter=withbody")
     data = resp.json()
@@ -80,6 +86,7 @@ def get_accepted_answer_body(answer_id):
 
     return first_two_lines
 
+# Function to print the top answers from Stack Overflow
 def print_top_answers(json_dict, num_answers=1):
     count = 0
     answers = []
@@ -98,6 +105,7 @@ def print_top_answers(json_dict, num_answers=1):
 
     return answers
 
+# Function to get an AI-generated answer using OpenAI
 def get_openai_answer(error_message):
     openai.api_key = openai_api_key
 
@@ -111,6 +119,7 @@ def get_openai_answer(error_message):
     )
     return response['choices'][0]['message']['content']
 
+# Lambda function handler
 def lambda_handler(event, context):
     print("Received event:", event)
     
@@ -186,6 +195,7 @@ def lambda_handler(event, context):
         send_email_sns("Error Occurred", message)
         send_slack_message(message)
 
+# Function to retrieve log events around the time of the error
 def get_log_context_events(log_group, log_stream, timestamp, before_lines, after_lines):
     client = boto3.client('logs')
     response = client.get_log_events(
