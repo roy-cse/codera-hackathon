@@ -56,7 +56,8 @@ The Lambda function consists of several components and functionalities:
    - Send notifications to Slack and email (SNS) with error details, Stack Overflow links, and OpenAI responses.
 
 ## High-Level Infrastructure Diagram
-![image](https://github.com/roy-cse/codera-hackathon/assets/43261722/9e0cb661-e7c3-4dde-ac85-567f461dda01)
+![image](https://github.com/roy-cse/codera-hackathon/assets/43261722/36377518-c7ef-4a19-bbd4-728d2ff8dc28)
+
 
 
 ## Sequence Diagram
