@@ -18,6 +18,25 @@ sns_topic_arn = os.environ.get("SNS_TOPIC_ARN")
 openai_api_key = os.environ.get("OPENAI_API_KEY")  # Set your OpenAI API key as an environment variable
 application_type = os.environ.get("APPLICATION_TYPE")
 
+
+def get_filter_pattern_from_name(log_group_name, filter_name):
+    try:
+        client = boto3.client('logs')  # Specify the region here
+        response = client.describe_subscription_filters(
+            logGroupName=log_group_name,
+            filterNamePrefix=filter_name  # Use filterNamePrefix to match the filter name
+        )
+
+        if 'subscriptionFilters' in response:
+            for filter in response['subscriptionFilters']:
+                if filter['filterName'] == filter_name:
+                    return filter.get('filterPattern')
+    
+    except Exception as e:
+        print(f"An error occurred: {str(e)}")
+    
+    return None
+
 # Define a custom HTML parser class
 class MyHTMLParser(HTMLParser):
     def __init__(self):
@@ -127,17 +146,11 @@ def lambda_handler(event, context):
     decoded_payload = base64.b64decode(compressed_payload)
     decompressed_payload = gzip.decompress(decoded_payload).decode('utf-8')
     print("Decompressed Payload:", decompressed_payload)
-    
-    if 'filterPattern' in event:
-        filter_pattern = event['filterPattern']
-    else:
-        filter_pattern = 'Error'
-    
     before_lines = 10
     after_lines = 10
     log_data = json.loads(decompressed_payload)
     log_group = log_data['logGroup']
-
+    filter_name = log_data.get("subscriptionFilters", [])
     # Initialize the message with log group and log stream information
     message = f"*Log Group*: {log_group}\n"
 
@@ -151,7 +164,17 @@ def lambda_handler(event, context):
     )
 
     latest_stream = response['logStreams'][0]['logStreamName']
-
+    if filter_name:
+        filter_name = filter_name[0]
+        print("Subscription Filter:", filter_name)
+    else:
+        print("No subscription filters found in the JSON data.")
+    filter_pattern = get_filter_pattern_from_name(log_group, filter_name)
+    
+    if filter_pattern is not None:
+        print(f"Filter Pattern for '{filter_name}': {filter_pattern}")
+    else:
+        print(f"Subscription filter '{filter_name}' not found or does not have a filter pattern.")
     response = client.filter_log_events(
         logGroupName=log_group,
         logStreamNames=[latest_stream],
