@@ -38,8 +38,8 @@ The Lambda function consists of several components and functionalities:
 
 ## Usage
 
-1. This lambda code is compatible with Python3.7. After cloning the repository, run `pip install -r requirements.txt`.
-   - This will install all the python packages. We'll compress the entire folder with the main.py file and the python packages and we'll upload it to Lambda later.  
+1. This lambda code is compatible with Python3.7. After cloning the repository, run `pip3 install -r requirements.txt  -t .`.
+   - This will install all the python packages in the current working directory. We'll compress the entire folder with the main.py file and the python packages and we'll upload it to Lambda later.  
 
 2. Set up the Lambda function in your AWS account, ensuring it has the necessary permissions to access SNS, CloudWatch Logs, and other required services.
 
