@@ -21,7 +21,7 @@ application_type = os.environ.get("APPLICATION_TYPE")
 
 def get_filter_pattern_from_name(log_group_name, filter_name):
     try:
-        client = boto3.client('logs')  # Specify the region here
+        client = boto3.client('logs')
         response = client.describe_subscription_filters(
             logGroupName=log_group_name,
             filterNamePrefix=filter_name  # Use filterNamePrefix to match the filter name
