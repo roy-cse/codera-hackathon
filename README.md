@@ -55,7 +55,10 @@ The Lambda function consists of several components and functionalities:
    - Use OpenAI to generate responses.
    - Send notifications to Slack and email (SNS) with error details, Stack Overflow links, and OpenAI responses.
 
-## Sequence Diagrams 
+## High-Level Infrastructure Diagram
+- [Infrastructure Diagram](docs/coderaInfraDiagram.png)
+
+## Sequence Diagram
 - [Lambda Sequence Diagram](docs/sequenceDiagram.mermaid)
 
 ## Customization
