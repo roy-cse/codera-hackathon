@@ -1,0 +1,30 @@
+sequenceDiagram
+    participant SubscriptionFilter
+    participant Lambda
+    participant SNS
+    participant Slack
+    participant StackOverflow
+    participant OpenAI
+    participant AWSLogs
+
+    SubscriptionFilter ->> AWSLogs: Receive event
+    Lambda ->> AWSLogs: Decompress and process event data
+    Lambda ->> AWSLogs: Filter log events
+    AWSLogs ->> AWSLogs: Retrieve matching events
+    loop For each matching event
+        AWSLogs ->> Lambda: Send matching event
+        Lambda ->> StackOverflow: Search Stack Overflow
+        StackOverflow ->> StackOverflow: Query for error information
+        StackOverflow -->> StackOverflow: Retrieve question IDs
+        StackOverflow ->> StackOverflow: Retrieve top answers
+        StackOverflow -->> StackOverflow: Retrieve answer body
+        Lambda ->> OpenAI: Get OpenAI answer
+        OpenAI -->> OpenAI: Generate AI answer
+        OpenAI ->> Lambda: Return AI answer
+        Lambda ->> Lambda: Prepare message
+        Lambda ->> SNS: Send email
+        SNS ->> SNS: Publish email
+        Lambda ->> Slack: Send Slack message
+        Slack -->> Slack: Process message
+    end
+    Lambda ->> Lambda: Complete processing
